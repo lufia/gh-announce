@@ -1,0 +1,49 @@
+#!/usr/local/plan9/bin/rc
+
+rfork e
+
+fn prop {
+	9 sed -n '/---/,/---/{s/^'^$1^':[ 	]*//p}' $*(2-)
+}
+
+fn body {
+	9 sed '/---/,/---/d' $*
+}
+
+lib=$home/lib/gh-announce
+flagfmt='w'
+args='[template ...]'
+
+if(! ifs=() eval `{9 getflags $*}){
+	9 usage
+	exit usage
+}
+if(~ $#* 0){
+	9 ls -p $lib
+	exit
+}
+
+for(i){
+	mainrepo=`{prop mainrepo $lib/$i}
+	labels=`{prop labels $lib/$i}
+	gopts=()
+	if(! ~ $#mainrepo 0)
+		gopts=($gopts -R $mainrepo)
+	opts=(-a @me)
+	if(! ~ $#labels 0)
+		opts=($opts -l $"labels)
+	if(! ~ $#flagw 0)
+		opts=($opts -w)
+
+	url=`{gh pr status --json url --jq .currentBranch.url}
+	if(~ $#url 0){
+		echo gh review-request: no target pull-request >[1=2]
+		exit nopr
+	}
+	repo=`{gh repo view --json nameWithOwner --jq .nameWithOwner}
+	title=`{gh pr status --json title --jq .currentBranch.title}
+
+	body $lib/$i |
+	9 sed 's/__PULL_REQUEST_URL__/'^$"url^/g' |
+	gh issue $gopts create $opts -t [$"repo]' '$"title -F -
+}

@@ -3,7 +3,7 @@
 rfork e
 
 fn prop {
-	9 sed -n '/---/,/---/{s/^'^$1^':[ 	]*//p}' $*(2-)
+	9 sed -n '/---/,/---/{s/^'^$1^':[ 	]*//p;}' $*(2-)
 }
 
 fn body {
@@ -44,6 +44,6 @@ for(i){
 	title=`{gh pr status --json title --jq .currentBranch.title}
 
 	body $lib/$i |
-	9 sed 's/__PULL_REQUEST_URL__/'^$"url^/g' |
+	9 sed 's!__PULL_REQUEST_URL__!'^$"url^'!g' |
 	gh issue $gopts create $opts -t [$"repo]' '$"title -F -
 }

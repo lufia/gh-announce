@@ -24,6 +24,10 @@ if(~ $#* 0){
 }
 
 for(i){
+	if(! test -f $lib/$i){
+		echo gh-announce: $lib/$i: no template file >[1=2]
+		exit nofile
+	}
 	mainrepo=`{prop mainrepo $lib/$i}
 	labels=`{prop labels $lib/$i}
 	gopts=()
@@ -37,7 +41,7 @@ for(i){
 
 	url=`{gh pr status --json url --jq .currentBranch.url}
 	if(~ $#url 0){
-		echo gh review-request: no target pull-request >[1=2]
+		echo gh-announce: no target pull-request >[1=2]
 		exit nopr
 	}
 	repo=`{gh repo view --json nameWithOwner --jq .nameWithOwner}
